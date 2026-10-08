@@ -1,14 +1,11 @@
-# Scholarship Recipient Prediction - Streamlit Dashboard
-
 import streamlit as st
 import pandas as pd
-import numpy as np
 import joblib
 
 
-# ---------------------------------------------------------
-# Page configuration
-# ---------------------------------------------------------
+# ==================================================
+# PAGE CONFIGURATION
+# ==================================================
 
 st.set_page_config(
     page_title="Scholarship Recipient Prediction",
@@ -17,54 +14,49 @@ st.set_page_config(
 )
 
 
-# ---------------------------------------------------------
-# Load trained model
-# ---------------------------------------------------------
+# ==================================================
+# LOAD LIGHTWEIGHT MODEL
+# ==================================================
 
 @st.cache_resource
 def load_model():
-    return joblib.load("scholarship_prediction_model.pkl")
+    return joblib.load("scholarship_prediction_light.pkl")
 
 
 model = load_model()
 
 
-# ---------------------------------------------------------
-# Page title
-# ---------------------------------------------------------
+# ==================================================
+# HEADER
+# ==================================================
 
 st.title("🎓 Scholarship Recipient Prediction")
 
 st.write(
-    "Enter the student's information below to predict "
-    "whether the student is likely to receive a scholarship."
+    "A Machine Learning application that predicts whether "
+    "a student is likely to receive a scholarship."
 )
 
-st.divider()
+st.info(
+    "This application uses a lightweight Random Forest model "
+    "trained on the Kaggle Datathon 2024 dataset."
+)
 
 
-# ---------------------------------------------------------
-# Student Information
-# ---------------------------------------------------------
+# ==================================================
+# STUDENT INFORMATION
+# ==================================================
 
-st.subheader("👨‍🎓 Student Information")
-
+st.subheader("Student Information")
 
 col1, col2 = st.columns(2)
+
 
 with col1:
 
     university_type = st.selectbox(
         "University Type",
         ["Public", "Private"]
-    )
-
-    application_year = st.number_input(
-        "Application Year",
-        min_value=2020,
-        max_value=2030,
-        value=2024,
-        step=1
     )
 
     number_of_siblings = st.number_input(
@@ -75,157 +67,181 @@ with col1:
         step=1
     )
 
+    university_gpa = st.number_input(
+        "University GPA",
+        min_value=0.0,
+        max_value=4.0,
+        value=3.0,
+        step=0.1
+    )
+
 
 with col2:
 
-    evaluation_score = st.number_input(
-        "Evaluation Score",
+    high_school_grade = st.number_input(
+        "High School Grade",
         min_value=0.0,
         max_value=100.0,
-        value=50.0,
+        value=80.0,
         step=1.0
     )
 
-    university_gpa = st.selectbox(
-        "University GPA",
-        [
-            "3.50 - 4.00",
-            "3.00 - 3.50",
-            "3.00 - 3.49",
-            "2.50 - 3.00",
-            "2.50 - 2.99",
-            "2.00 - 2.50",
-            "1.80 - 2.49",
-            "2.50 ve altı",
-            "ORTALAMA BULUNMUYOR"
-        ]
+    gender = st.selectbox(
+        "Gender",
+        ["Male", "Female"]
     )
 
+
+# ==================================================
+# CONVERT ENGLISH INPUTS TO ORIGINAL DATA VALUES
+# ==================================================
+
+university_type_map = {
+    "Public": "Devlet",
+    "Private": "Özel"
+}
+
+gender_map = {
+    "Male": "Erkek",
+    "Female": "Kadın"
+}
+
+
+# ==================================================
+# PREDICTION
+# ==================================================
 
 st.divider()
 
-
-# ---------------------------------------------------------
-# Prediction
-# ---------------------------------------------------------
-
 if st.button(
     "🔮 Predict Scholarship",
+    type="primary",
     use_container_width=True
 ):
 
-    # Create a dictionary containing all model features.
-    # Unspecified features are set to NaN so that the
-    # trained preprocessing pipeline can impute them.
+    # Create input data using the same feature names
+    # used when training the lightweight model.
 
-    student_data = {
-        "Basvuru Yili": application_year,
-        "Evaluation_Score": evaluation_score,
-
-        "Gender": np.nan,
-        "Birth_Date": np.nan,
-        "Dogum Yeri": np.nan,
-        "Residence_City": np.nan,
-        "University_Name": np.nan,
-        "University_Type": (
-            "Devlet"
-            if university_type == "Public"
-            else "Özel"
-        ),
-        "Department": np.nan,
-        "University_Year": np.nan,
-        "University_GPA": university_gpa,
-
-        "Daha Once Baska Bir Universiteden Mezun Olmus": np.nan,
-        "Lise Adi": np.nan,
-        "Lise Adi Diger": np.nan,
-        "Lise Sehir": np.nan,
-        "High_School_Type": np.nan,
-        "Lise Bolumu": np.nan,
-        "Lise Bolum Diger": np.nan,
-        "High_School_Grade": np.nan,
-
-        "Baska Bir Kurumdan Burs Aliyor mu?": np.nan,
-        "Burs Aldigi Baska Kurum": np.nan,
-        "Baska Kurumdan Aldigi Burs Miktari": np.nan,
-
-        "Anne Egitim Durumu": np.nan,
-        "Anne Calisma Durumu": np.nan,
-        "Anne Sektor": np.nan,
-
-        "Baba Egitim Durumu": np.nan,
-        "Baba Calisma Durumu": np.nan,
-        "Baba Sektor": np.nan,
-
-        "Number_of_Siblings": str(number_of_siblings),
-
-        "Girisimcilik Kulupleri Tarzi Bir Kulube Uye misiniz?": np.nan,
-        "Uye Oldugunuz Kulubun Ismi": np.nan,
-
-        "Profesyonel Bir Spor Daliyla Mesgul musunuz?": np.nan,
-        "Spor Dalindaki Rolunuz Nedir?": np.nan,
-
-        "Aktif olarak bir STK üyesi misiniz?": np.nan,
-        "Hangi STK'nin Uyesisiniz?": np.nan,
-        "Stk Projesine Katildiniz Mi?": np.nan,
-
-        "Girisimcilikle Ilgili Deneyiminiz Var Mi?": np.nan,
-        "Girisimcilikle Ilgili Deneyiminizi Aciklayabilir misiniz?": np.nan,
-
-        "Ingilizce Biliyor musunuz?": np.nan,
-        "Ingilizce Seviyeniz?": np.nan,
-
-        "Daha Önceden Mezun Olunduysa, Mezun Olunan Üniversite": np.nan
-    }
-
-    # Convert to DataFrame
-    student_df = pd.DataFrame([student_data])
-
-    # Make sure the columns are in the same order as the
-    # model's training features
-    expected_columns = model.feature_names_in_
-
-    student_df = student_df.reindex(
-        columns=expected_columns
-    )
-
-    # Make prediction
-    prediction = model.predict(student_df)
-
-    probability = model.predict_proba(student_df)
-
-    scholarship_probability = probability[0][1] * 100
+    input_data = pd.DataFrame({
+        "University_Type": [
+            university_type_map[university_type]
+        ],
+        "Number_of_Siblings": [
+            number_of_siblings
+        ],
+        "High_School_Grade": [
+            high_school_grade
+        ],
+        "University_GPA": [
+            university_gpa
+        ],
+        "Gender": [
+            gender_map[gender]
+        ]
+    })
 
 
-    # -----------------------------------------------------
-    # Display result
-    # -----------------------------------------------------
+    # --------------------------------------------------
+    # MAKE PREDICTION
+    # --------------------------------------------------
 
-    st.divider()
+    prediction = model.predict(input_data)[0]
 
-    st.subheader("📊 Prediction Result")
+    probabilities = model.predict_proba(input_data)[0]
 
-    if prediction[0] == 1:
+    scholarship_probability = probabilities[1]
+
+
+    # --------------------------------------------------
+    # DISPLAY RESULT
+    # --------------------------------------------------
+
+    st.subheader("Prediction Result")
+
+    if prediction == 1:
 
         st.success(
-            "🎉 Scholarship Recipient"
+            "🎉 The model predicts that the student is likely "
+            "to receive a scholarship."
         )
 
     else:
 
-        st.info(
-            "Not a Scholarship Recipient"
+        st.warning(
+            "The model predicts that the student is unlikely "
+            "to receive a scholarship."
         )
 
 
+    # --------------------------------------------------
+    # PROBABILITY
+    # --------------------------------------------------
+
     st.metric(
         "Scholarship Probability",
-        f"{scholarship_probability:.2f}%"
+        f"{scholarship_probability:.2%}"
+    )
+
+    st.progress(
+        float(scholarship_probability)
     )
 
 
-    st.caption(
-        "Model: Random Forest | "
-        "Accuracy: 95.02% | "
-        "F1 Score: 81.71%"
-    )
+# ==================================================
+# MODEL INFORMATION
+# ==================================================
+
+st.divider()
+
+with st.expander("ℹ️ About This Project"):
+
+    st.write("**Project:** Scholarship Recipient Prediction Using Machine Learning")
+
+    st.write("**Dataset:** Kaggle Datathon 2024")
+
+    st.write("**Model:** Lightweight Random Forest Classifier")
+
+    st.write("**Deployment Model Size:** Approximately 0.90 MB")
+
+    st.write("**Features Used:** 5")
+
+    st.write("""
+    The five features used by the deployment model are:
+    
+    - University Type
+    - Number of Siblings
+    - High School Grade
+    - University GPA
+    - Gender
+    """)
+
+
+# ==================================================
+# REAL-WORLD APPLICATION
+# ==================================================
+
+with st.expander("🌍 Real-World Application"):
+
+    st.write("""
+    This application demonstrates how machine learning can
+    support scholarship screening.
+
+    A scholarship organization could use such a system as an
+    initial decision-support tool to identify applications that
+    may require further review.
+
+    The prediction should not replace official scholarship
+    evaluation or human decision-making.
+    """)
+
+
+# ==================================================
+# DISCLAIMER
+# ==================================================
+
+st.divider()
+
+st.caption(
+    "⚠️ This prediction is generated by a machine learning model "
+    "and should not be considered an official scholarship decision."
+)

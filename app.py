@@ -1,292 +1,231 @@
+# Scholarship Recipient Prediction - Streamlit Dashboard
+
 import streamlit as st
 import pandas as pd
+import numpy as np
 import joblib
 
-# --------------------------------------------------
-# PAGE CONFIGURATION
-# --------------------------------------------------
+
+# ---------------------------------------------------------
+# Page configuration
+# ---------------------------------------------------------
+
 st.set_page_config(
     page_title="Scholarship Recipient Prediction",
     page_icon="🎓",
-    layout="wide"
+    layout="centered"
 )
 
-# --------------------------------------------------
-# LOAD MODEL
-# --------------------------------------------------
+
+# ---------------------------------------------------------
+# Load trained model
+# ---------------------------------------------------------
+
 @st.cache_resource
 def load_model():
     return joblib.load("scholarship_prediction_model.pkl")
 
+
 model = load_model()
 
-# --------------------------------------------------
-# TITLE
-# --------------------------------------------------
+
+# ---------------------------------------------------------
+# Page title
+# ---------------------------------------------------------
+
 st.title("🎓 Scholarship Recipient Prediction")
-st.markdown(
-    "### Enter student information to predict scholarship eligibility"
+
+st.write(
+    "Enter the student's information below to predict "
+    "whether the student is likely to receive a scholarship."
 )
 
 st.divider()
 
-# --------------------------------------------------
-# PERSONAL INFORMATION
-# --------------------------------------------------
-st.header("👤 Personal Information")
 
-col1, col2, col3 = st.columns(3)
+# ---------------------------------------------------------
+# Student Information
+# ---------------------------------------------------------
 
-with col1:
-    gender = st.selectbox(
-        "Gender",
-        ["Male", "Female", "Prefer not to say"]
-    )
+st.subheader("👨‍🎓 Student Information")
 
-with col2:
-    birth_date = st.text_input(
-        "Birth Date",
-        placeholder="e.g. 15/08/2002"
-    )
 
-with col3:
-    birth_city = st.text_input(
-        "Birth City",
-        placeholder="e.g. Hyderabad"
-    )
-
-residence_city = st.text_input(
-    "Residence City",
-    placeholder="e.g. Hyderabad"
-)
-
-# --------------------------------------------------
-# UNIVERSITY INFORMATION
-# --------------------------------------------------
-st.header("🎓 University Information")
-
-col1, col2, col3 = st.columns(3)
+col1, col2 = st.columns(2)
 
 with col1:
-    application_year = st.number_input(
-        "Application Year",
-        min_value=2000,
-        max_value=2030,
-        value=2024
-    )
 
-with col2:
     university_type = st.selectbox(
         "University Type",
         ["Public", "Private"]
     )
 
-with col3:
-    university_year = st.selectbox(
-        "University Year",
-        [
-            "1", "2", "3", "4",
-            "5", "6",
-            "Preparatory",
-            "Graduate",
-            "Master's"
-        ]
+    application_year = st.number_input(
+        "Application Year",
+        min_value=2020,
+        max_value=2030,
+        value=2024,
+        step=1
     )
 
-university_name = st.text_input(
-    "University Name",
-    placeholder="Enter university name"
-)
-
-department = st.text_input(
-    "Department",
-    placeholder="e.g. Computer Engineering"
-)
-
-col1, col2 = st.columns(2)
-
-with col1:
-    university_gpa = st.selectbox(
-        "University GPA",
-        [
-            "3.50 - 4.00",
-            "3.00 - 3.49",
-            "2.50 - 2.99",
-            "2.00 - 2.49",
-            "1.00 - 1.99",
-            "Below 1.00",
-            "No GPA"
-        ]
+    number_of_siblings = st.number_input(
+        "Number of Siblings",
+        min_value=0,
+        max_value=20,
+        value=2,
+        step=1
     )
+
 
 with col2:
+
     evaluation_score = st.number_input(
         "Evaluation Score",
         min_value=0.0,
         max_value=100.0,
-        value=50.0
+        value=50.0,
+        step=1.0
     )
 
-# --------------------------------------------------
-# HIGH SCHOOL INFORMATION
-# --------------------------------------------------
-st.header("🏫 High School Information")
-
-col1, col2 = st.columns(2)
-
-with col1:
-    high_school_name = st.text_input(
-        "High School Name"
-    )
-
-with col2:
-    high_school_city = st.text_input(
-        "High School City"
-    )
-
-col1, col2 = st.columns(2)
-
-with col1:
-    high_school_type = st.selectbox(
-        "High School Type",
+    university_gpa = st.selectbox(
+        "University GPA",
         [
-            "Science High School",
-            "Anatolian High School",
-            "Vocational High School",
-            "Private High School",
-            "Other"
+            "3.50 - 4.00",
+            "3.00 - 3.50",
+            "3.00 - 3.49",
+            "2.50 - 3.00",
+            "2.50 - 2.99",
+            "2.00 - 2.50",
+            "1.80 - 2.49",
+            "2.50 ve altı",
+            "ORTALAMA BULUNMUYOR"
         ]
     )
 
-with col2:
-    high_school_grade = st.selectbox(
-        "High School Grade",
-        [
-            "75 - 100",
-            "70 - 84",
-            "55 - 69",
-            "45 - 54",
-            "25 - 44",
-            "0 - 24",
-            "No Grade"
-        ]
-    )
 
-high_school_department = st.text_input(
-    "High School Department"
-)
-
-# --------------------------------------------------
-# FAMILY INFORMATION
-# --------------------------------------------------
-st.header("👨‍👩‍👦 Family Information")
-
-col1, col2 = st.columns(2)
-
-with col1:
-    mother_education = st.selectbox(
-        "Mother's Education",
-        [
-            "No Education",
-            "Primary School",
-            "Middle School",
-            "High School",
-            "University",
-            "Master's",
-            "Doctorate"
-        ]
-    )
-
-with col2:
-    father_education = st.selectbox(
-        "Father's Education",
-        [
-            "No Education",
-            "Primary School",
-            "Middle School",
-            "High School",
-            "University",
-            "Master's",
-            "Doctorate"
-        ]
-    )
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    mother_work = st.selectbox(
-        "Mother's Employment",
-        ["Yes", "No", "Retired"]
-    )
-
-with col2:
-    father_work = st.selectbox(
-        "Father's Employment",
-        ["Yes", "No", "Retired"]
-    )
-
-with col3:
-    siblings = st.number_input(
-        "Number of Siblings",
-        min_value=0,
-        max_value=20,
-        value=2
-    )
-
-# --------------------------------------------------
-# OTHER INFORMATION
-# --------------------------------------------------
-st.header("🌟 Activities & Skills")
-
-col1, col2 = st.columns(2)
-
-with col1:
-    entrepreneurship = st.selectbox(
-        "Entrepreneurship Experience",
-        ["Yes", "No"]
-    )
-
-with col2:
-    english_known = st.selectbox(
-        "English Knowledge",
-        ["Yes", "No"]
-    )
-
-english_level = st.selectbox(
-    "English Level",
-    ["Beginner", "Intermediate", "Advanced", "None"]
-)
-
-club_member = st.selectbox(
-    "Member of an Entrepreneurship Club",
-    ["Yes", "No"]
-)
-
-professional_sport = st.selectbox(
-    "Professional Athlete",
-    ["Yes", "No"]
-)
-
-ngo_member = st.selectbox(
-    "Active NGO Member",
-    ["Yes", "No"]
-)
-
-ngo_project = st.selectbox(
-    "Participated in an NGO Project",
-    ["Yes", "No"]
-)
-
-# --------------------------------------------------
-# PREDICTION
-# --------------------------------------------------
 st.divider()
+
+
+# ---------------------------------------------------------
+# Prediction
+# ---------------------------------------------------------
 
 if st.button(
     "🔮 Predict Scholarship",
     use_container_width=True
 ):
 
-    st.info(
-        "The complete 41-feature prediction mapping will be applied here."
+    # Create a dictionary containing all model features.
+    # Unspecified features are set to NaN so that the
+    # trained preprocessing pipeline can impute them.
+
+    student_data = {
+        "Basvuru Yili": application_year,
+        "Evaluation_Score": evaluation_score,
+
+        "Gender": np.nan,
+        "Birth_Date": np.nan,
+        "Dogum Yeri": np.nan,
+        "Residence_City": np.nan,
+        "University_Name": np.nan,
+        "University_Type": (
+            "Devlet"
+            if university_type == "Public"
+            else "Özel"
+        ),
+        "Department": np.nan,
+        "University_Year": np.nan,
+        "University_GPA": university_gpa,
+
+        "Daha Once Baska Bir Universiteden Mezun Olmus": np.nan,
+        "Lise Adi": np.nan,
+        "Lise Adi Diger": np.nan,
+        "Lise Sehir": np.nan,
+        "High_School_Type": np.nan,
+        "Lise Bolumu": np.nan,
+        "Lise Bolum Diger": np.nan,
+        "High_School_Grade": np.nan,
+
+        "Baska Bir Kurumdan Burs Aliyor mu?": np.nan,
+        "Burs Aldigi Baska Kurum": np.nan,
+        "Baska Kurumdan Aldigi Burs Miktari": np.nan,
+
+        "Anne Egitim Durumu": np.nan,
+        "Anne Calisma Durumu": np.nan,
+        "Anne Sektor": np.nan,
+
+        "Baba Egitim Durumu": np.nan,
+        "Baba Calisma Durumu": np.nan,
+        "Baba Sektor": np.nan,
+
+        "Number_of_Siblings": str(number_of_siblings),
+
+        "Girisimcilik Kulupleri Tarzi Bir Kulube Uye misiniz?": np.nan,
+        "Uye Oldugunuz Kulubun Ismi": np.nan,
+
+        "Profesyonel Bir Spor Daliyla Mesgul musunuz?": np.nan,
+        "Spor Dalindaki Rolunuz Nedir?": np.nan,
+
+        "Aktif olarak bir STK üyesi misiniz?": np.nan,
+        "Hangi STK'nin Uyesisiniz?": np.nan,
+        "Stk Projesine Katildiniz Mi?": np.nan,
+
+        "Girisimcilikle Ilgili Deneyiminiz Var Mi?": np.nan,
+        "Girisimcilikle Ilgili Deneyiminizi Aciklayabilir misiniz?": np.nan,
+
+        "Ingilizce Biliyor musunuz?": np.nan,
+        "Ingilizce Seviyeniz?": np.nan,
+
+        "Daha Önceden Mezun Olunduysa, Mezun Olunan Üniversite": np.nan
+    }
+
+    # Convert to DataFrame
+    student_df = pd.DataFrame([student_data])
+
+    # Make sure the columns are in the same order as the
+    # model's training features
+    expected_columns = model.feature_names_in_
+
+    student_df = student_df.reindex(
+        columns=expected_columns
+    )
+
+    # Make prediction
+    prediction = model.predict(student_df)
+
+    probability = model.predict_proba(student_df)
+
+    scholarship_probability = probability[0][1] * 100
+
+
+    # -----------------------------------------------------
+    # Display result
+    # -----------------------------------------------------
+
+    st.divider()
+
+    st.subheader("📊 Prediction Result")
+
+    if prediction[0] == 1:
+
+        st.success(
+            "🎉 Scholarship Recipient"
+        )
+
+    else:
+
+        st.info(
+            "Not a Scholarship Recipient"
+        )
+
+
+    st.metric(
+        "Scholarship Probability",
+        f"{scholarship_probability:.2f}%"
+    )
+
+
+    st.caption(
+        "Model: Random Forest | "
+        "Accuracy: 95.02% | "
+        "F1 Score: 81.71%"
     )
